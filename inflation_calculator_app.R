@@ -1,47 +1,62 @@
-#library(tidyverse)
-#library(shiny)
+library(tidyverse)
+library(shiny)
+library(ggrepel)
+#library(shinythemes)
+options(scipen = 99)
+
+backgroundImageCSS <- "height:100vh;background-size: cover;background-image: url('%s');"
+addResourcePath(prefix = 'www', directoryPath = 'C:/Users/usuario/Documents/GitHub/inflation_calculator/www')
+
 
 ui <- fluidPage(
-  titlePanel(paste("Inflation calculator ",year(today()), sep ="")),
+  tags$head(
+  tags$style(HTML("
+                #past_year 
+                  {background-color: #d6ffa1;color:black}
+                #to_year 
+                  {background-color: #95d447;color:black}
+                #convert_value 
+                  {background-color: #5b9b07;color:black}
+                #submit_button
+                  {background-color: #f5c116;width: 50%;display:inline-block;margin:0px 20%;font-family:Helvetica;font-weight:bold;border-radius: 20px}
+                "
+  )
+  )),
+  titlePanel(div(paste("Inflation Calculator ",year(today()), sep =""),style="font-family:Helvetica;font-weight:bold;color:white;padding-bottom:20px")),
   fluidRow(
     column(width=3,
-           div(style = "width:100%;",
-    selectInput("past_year",label = "From year:",
+    div(selectInput(inputId = "past_year",label = "From year:",
                 choices = c("2023","2022","2021","2020","2019","2018","2017","2016","2015","2014",
                             "2013","2012","2011","2010","2009","2008","2007","2006","2005",
-                            "2004","2003","2002","2001","2000")),
-    selectInput("to_year",label = "To year:",
+                            "2004","2003","2002","2001","2000"),selectize = FALSE),style="color:white"),
+    div(selectInput("to_year",label = "To year:",
                 choices = c("2023","2022","2021","2020","2019","2018","2017","2016","2015","2014",
                             "2013","2012","2011","2010","2009","2008","2007","2006","2005",
-                            "2004","2003","2002","2001","2000")),
-    numericInput("convert_value",label = "Money to convert to present value:",
-                 value=0),
-    actionButton("submit_button","Submit")
-    )),
+                            "2004","2003","2002","2001","2000"),selectize = FALSE),style="color:white"),
+    div(numericInput("convert_value",label = "Money to convert to present value:",
+                 value=0),style="color:white"),
+    actionButton("submit_button","SUBMIT")
+    ),
     column(width=9,
-           plotOutput("line_plot",width="100%"))
+           div(plotOutput("line_plot",hover=hoverOpts("hover_money")),style="padding-right:6%"),
+           uiOutput("hover_info"))
   ),
   fluidRow(
-    column(width = 3),
+    div(column(width = 3),
   column(width = 3,
-         div(style = "width:100%;",
-             textOutput("subtitle_1")),
-         div(style = "width:100%;",
-             textOutput("present_value"))
+         textOutput("subtitle_1"),
+         textOutput("present_value")
          ),
   column(width = 3,
-         div(style = "width:100%;",
-             textOutput("subtitle_2")),
-         div(style = "width:100%;",
-             textOutput("equivalent_value"))
+         textOutput("subtitle_2"),
+         textOutput("equivalent_value")
          ),
   column(width = 3,
-         div(style = "width:100%;",
-             textOutput("subtitle_3")),
-         div(style = "width:100%;",
-             textOutput("perc_lost"))
-         )
-)
+         textOutput("subtitle_3"),
+         textOutput("perc_lost")
+         ),style="padding-right:6%")
+),
+style=sprintf(backgroundImageCSS, "www/backgr_calc.png"),
 
 )
 
@@ -89,8 +104,44 @@ server <- function(input, output) {
     
     output$line_plot <- renderPlot(
       ggplot(year_inflation_sub,aes(x=year,y=value_for_graph))+
-        geom_line()
+        geom_line(color="#a18202",size=1.6) +
+        geom_point(shape=24,color="#b5ae43",fill="#a18202",size=3) +
+        #geom_text_repel(aes(label=format(value_for_graph),hjust=0,vjust=0))+
+        scale_x_continuous(limits = c(min(year_inflation_sub$year),max(year_inflation_sub$year)),
+                           breaks = seq(min(year_inflation_sub$year),max(year_inflation_sub$year)))+
+        xlab("Year") + ylab("Money value through each year") +
+        #scale_y_continuous(labels = scales::comma) +
+        theme(panel.background = element_rect(fill = "#d6ffa1", colour="#d6ffa1"),
+              panel.grid.major = element_line(colour = "#d6ffa1"),
+              panel.grid.minor = element_line(colour = "#d6ffa1"),
+              panel.border = element_blank(),
+              plot.background = element_rect(fill = "#d6ffa1"),
+              axis.text.x=element_text(colour="black"),
+              axis.text.y=element_text(colour="black"))
                                    )
+    
+    output$hover_info <- renderUI({
+      hover <- input[["hover_money"]]
+      if(is.null(hover)) return(NULL)
+      punto <- nearPoints(year_inflation_sub, hover,threshold = 5, maxpoints = 1)
+      if(nrow(punto) == 0) return(NULL)
+      left_px <- hover$coords_css$x
+      top_px  <- hover$coords_css$y
+      style <- paste0(
+        "position:absolute; z-index:100; pointer-events:none; ",
+        "width:12%;height:20%;font-size:0.7em;",
+        #"background-color: rgba(245, 245, 245, 0.85); ",
+        "left:", left_px, 
+        "px; top:", top_px, "px;"
+      )
+      tooltip <- paste0(
+        "<b> Money: </b>",     format(punto[["value_for_graph"]],digits=1,nsmall=0,scientific=FALSE,big.mark=","),     "<br/>",
+        "<b> Year: </b>", punto[["year"]], "<br/>"
+      )
+      wellPanel(
+        style = style, p(HTML(tooltip))
+      )
+    })
     
     text_1$converted_value <- format(input$convert_value/prod_inflation[[1]],digits=1,nsmall=0,scientific=FALSE,big.mark=",")
     text_2$converted_value <- format(input$convert_value*prod_inflation[[1]],digits=1,nsmall=0,scientific=FALSE,big.mark=",")
@@ -109,6 +160,3 @@ server <- function(input, output) {
 }
 
 shinyApp(ui, server)
-
-
-
