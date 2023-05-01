@@ -4,7 +4,7 @@ library(shiny)
 options(scipen = 99)
 
 backgroundImageCSS <- "height:100vh;background-size: cover;background-image: url('%s');"
-addResourcePath(prefix = 'www', directoryPath = 'C:/Users/usuario/Documents/GitHub/inflation_calculator/www')
+addResourcePath(prefix = 'www', directoryPath = 'www')
 
 fluidPage(
   tags$head(
