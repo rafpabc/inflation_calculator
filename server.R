@@ -5,11 +5,11 @@ options(scipen = 99)
 
 function(input, output) {
   year_inflation <- as.data.frame(cbind(c(2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,
-                            2011,2010,2009,2008,2007,2006,2005,2004,2003,2002,2001,
-                            2000),
-                          c(1,1.131,1.056,1.016,1.038,1.031,1.040,1.057,1.067,1.036,
-                            1.019,1.024,1.037,1.031,1.020,1.076,1.056,1.044,1.048,
-                            1.055,1.064,1.069,1.076,1.087))) %>%
+                                          2011,2010,2009,2008,2007,2006,2005,2004,2003,2002,2001,
+                                          2000),
+                                        c(1,1.131,1.056,1.016,1.038,1.031,1.040,1.057,1.067,1.036,
+                                          1.019,1.024,1.037,1.031,1.020,1.076,1.056,1.044,1.048,
+                                          1.055,1.064,1.069,1.076,1.087))) %>%
     rename(year=V1,inflation=V2)
   
   value_reactive <- reactiveValues(subtitle1 = "")
@@ -61,7 +61,7 @@ function(input, output) {
               plot.background = element_rect(fill = "#d6ffa1"),
               axis.text.x=element_text(colour="black"),
               axis.text.y=element_text(colour="black"))
-                                   )
+    )
     
     output$hover_info <- renderUI({
       hover <- input[["hover_money"]]
@@ -72,7 +72,7 @@ function(input, output) {
       top_px  <- hover$coords_css$y
       style <- paste0(
         "position:absolute; z-index:100; pointer-events:none; ",
-        "width:12%;height:20%;font-size:0.7em;",
+        "width:12%;height:20%;font-size:0.8em;",
         #"background-color: rgba(245, 245, 245, 0.85); ",
         "left:", left_px, 
         "px; top:", top_px, "px;"
@@ -89,13 +89,10 @@ function(input, output) {
     text_1$converted_value <- format(input$convert_value/prod_inflation[[1]],digits=1,nsmall=0,scientific=FALSE,big.mark=",")
     text_2$converted_value <- format(input$convert_value*prod_inflation[[1]],digits=1,nsmall=0,scientific=FALSE,big.mark=",")
     text_3$converted_value <- format(((input$convert_value-(input$convert_value/prod_inflation[[1]]))/input$convert_value)*100,digits=1,nsmall=2,scientific=FALSE,big.mark=",")
-
-    output$subtitle_1 <- renderText(paste("$",format(value_reactive$subtitle1,digits=1,nsmall=0,big.mark=",")," in ",future_reactive$subtitle3," would equal this in ",past_reactive$subtitle2,sep=""))
-    output$present_value <- renderText(paste("$",{text_1$converted_value},sep=""))
-    output$subtitle_2 <- renderText(paste("$",format(value_reactive$subtitle1,digits=1,nsmall=0,big.mark=",")," in ",past_reactive$subtitle2," would equal this in ",future_reactive$subtitle3,sep=""))
-    output$equivalent_value <- renderText(paste("$",{text_2$converted_value},sep=""))
-    output$subtitle_3 <- renderText(paste("The amount of lost value from ",past_reactive$subtitle2," to ",future_reactive$subtitle3," was",sep=""))
-    output$perc_lost <- renderText(paste({text_3$converted_value},"%",sep=""))
+    
+    output$subtitle_1 <- renderText(paste("$",format(value_reactive$subtitle1,digits=1,nsmall=0,big.mark=",")," in ",future_reactive$subtitle3," would had equal $",text_1$converted_value," in ",past_reactive$subtitle2,sep=""))
+    output$subtitle_2 <- renderText(paste("$",format(value_reactive$subtitle1,digits=1,nsmall=0,big.mark=",")," in ",past_reactive$subtitle2," would equal $",text_2$converted_value," in ", future_reactive$subtitle3,sep=""))
+    output$subtitle_3 <- renderText(paste("Money lost ", text_3$converted_value,"% of its value from ",past_reactive$subtitle2," to ",future_reactive$subtitle3,sep=""))
     
   }
   )
