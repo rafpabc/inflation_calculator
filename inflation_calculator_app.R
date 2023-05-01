@@ -1,6 +1,7 @@
 library(tidyverse)
 library(shiny)
 library(ggrepel)
+library(rsconnect)
 #library(shinythemes)
 options(scipen = 99)
 
@@ -19,6 +20,13 @@ ui <- fluidPage(
                   {background-color: #5b9b07;color:black}
                 #submit_button
                   {background-color: #f5c116;width: 50%;display:inline-block;margin:0px 20%;font-family:Helvetica;font-weight:bold;border-radius: 20px}
+                #subtitle_1
+                  {background-color: #95d447;font-weight:bold}
+                #subtitle_2
+                  {background-color: #95d447;font-weight:bold}
+                #subtitle_3
+                  {background-color: #95d447;font-weight:bold;height:40%}
+                  
                 "
   )
   )),
@@ -38,25 +46,24 @@ ui <- fluidPage(
     actionButton("submit_button","SUBMIT")
     ),
     column(width=9,
-           div(plotOutput("line_plot",hover=hoverOpts("hover_money")),style="padding-right:6%"),
+           plotOutput("line_plot",hover=hoverOpts("hover_money")),
            uiOutput("hover_info"))
   ),
   fluidRow(
-    div(column(width = 3),
+  column(width = 3),
   column(width = 3,
-         textOutput("subtitle_1"),
-         textOutput("present_value")
+         textOutput("subtitle_1")
          ),
   column(width = 3,
-         textOutput("subtitle_2"),
-         textOutput("equivalent_value")
+         textOutput("subtitle_2")
          ),
   column(width = 3,
-         textOutput("subtitle_3"),
-         textOutput("perc_lost")
-         ),style="padding-right:6%")
+         textOutput("subtitle_3")
+         )
 ),
-style=sprintf(backgroundImageCSS, "www/backgr_calc.png"),
+style="height:100vh;background-size: cover;background-image: url(www/backgr_calc.png);padding-right:5%"
+
+#sprintf(backgroundImageCSS, "www/backgr_calc.png")
 
 )
 
@@ -129,7 +136,7 @@ server <- function(input, output) {
       top_px  <- hover$coords_css$y
       style <- paste0(
         "position:absolute; z-index:100; pointer-events:none; ",
-        "width:12%;height:20%;font-size:0.7em;",
+        "width:12%;height:20%;font-size:0.8em;",
         #"background-color: rgba(245, 245, 245, 0.85); ",
         "left:", left_px, 
         "px; top:", top_px, "px;"
@@ -147,12 +154,9 @@ server <- function(input, output) {
     text_2$converted_value <- format(input$convert_value*prod_inflation[[1]],digits=1,nsmall=0,scientific=FALSE,big.mark=",")
     text_3$converted_value <- format(((input$convert_value-(input$convert_value/prod_inflation[[1]]))/input$convert_value)*100,digits=1,nsmall=2,scientific=FALSE,big.mark=",")
 
-    output$subtitle_1 <- renderText(paste("$",format(value_reactive$subtitle1,digits=1,nsmall=0,big.mark=",")," in ",future_reactive$subtitle3," would equal this in ",past_reactive$subtitle2,sep=""))
-    output$present_value <- renderText(paste("$",{text_1$converted_value},sep=""))
-    output$subtitle_2 <- renderText(paste("$",format(value_reactive$subtitle1,digits=1,nsmall=0,big.mark=",")," in ",past_reactive$subtitle2," would equal this in ",future_reactive$subtitle3,sep=""))
-    output$equivalent_value <- renderText(paste("$",{text_2$converted_value},sep=""))
-    output$subtitle_3 <- renderText(paste("The amount of lost value from ",past_reactive$subtitle2," to ",future_reactive$subtitle3," was",sep=""))
-    output$perc_lost <- renderText(paste({text_3$converted_value},"%",sep=""))
+    output$subtitle_1 <- renderText(paste("$",format(value_reactive$subtitle1,digits=1,nsmall=0,big.mark=",")," in ",future_reactive$subtitle3," would had equal $",text_1$converted_value," in ",past_reactive$subtitle2,sep=""))
+    output$subtitle_2 <- renderText(paste("$",format(value_reactive$subtitle1,digits=1,nsmall=0,big.mark=",")," in ",past_reactive$subtitle2," would equal $",text_2$converted_value," in ", future_reactive$subtitle3,sep=""))
+    output$subtitle_3 <- renderText(paste("Money lost ", text_3$converted_value,"% of its value from ",past_reactive$subtitle2," to ",future_reactive$subtitle3,sep=""))
     
   }
   )
