@@ -40,7 +40,8 @@ fluidPage(
                                        "2004","2003","2002","2001","2000"),selectize = FALSE),style="color:white"),
            div(numericInput("convert_value",label = "Money to convert to present value:",
                             value=0),style="color:white"),
-           actionButton("submit_button","SUBMIT")
+           actionButton("submit_button","SUBMIT"),
+           textOutput("warning_years")
     ),
     column(width=9,
            plotOutput("line_plot",hover=hoverOpts("hover_money")),

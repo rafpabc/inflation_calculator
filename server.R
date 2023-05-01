@@ -20,6 +20,12 @@ function(input, output) {
   text_3 <- reactiveValues(converted_value = "")
   prod_inf <- c()
   observeEvent(input$submit_button,{
+    
+    if(input$past_year > input$to_year){
+      output$warning_years <- renderText("'From year' must be smaller than 'To year'")
+    } else {
+    
+    
     input_values <- data.frame(matrix(nrow = 0,ncol = 3))
     colnames(input_values) <- c("value_to_convert","from_year","to_year")
     input_values[1,] <- c(input$convert_value,as.numeric(input$past_year),as.numeric(input$to_year))
@@ -47,7 +53,7 @@ function(input, output) {
     
     output$line_plot <- renderPlot(
       ggplot(year_inflation_sub,aes(x=year,y=value_for_graph))+
-        geom_line(color="#a18202",size=1.6) +
+        geom_line(color="#a18202",linewidth=1.6) +
         geom_point(shape=24,color="#b5ae43",fill="#a18202",size=3) +
         #geom_text_repel(aes(label=format(value_for_graph),hjust=0,vjust=0))+
         scale_x_continuous(limits = c(min(year_inflation_sub$year),max(year_inflation_sub$year)),
@@ -94,6 +100,7 @@ function(input, output) {
     output$subtitle_2 <- renderText(paste("$",format(value_reactive$subtitle1,digits=1,nsmall=0,big.mark=",")," in ",past_reactive$subtitle2," would equal $",text_2$converted_value," in ", future_reactive$subtitle3,sep=""))
     output$subtitle_3 <- renderText(paste("Money lost ", text_3$converted_value,"% of its value from ",past_reactive$subtitle2," to ",future_reactive$subtitle3,sep=""))
     
+    }
   }
   )
   

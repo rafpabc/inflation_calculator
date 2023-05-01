@@ -4,8 +4,8 @@ username:
 account: rafpabc
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
-appId: 8996827
-bundleId: 7157420
+appId: 8997105
+bundleId: 7157495
 url: https://rafpabc.shinyapps.io/inflation_calculator/
-when: 1682904487.08774
-lastSyncTime: 1682904487.08775
+when: 1682906724.19363
+lastSyncTime: 1682906724.19365
