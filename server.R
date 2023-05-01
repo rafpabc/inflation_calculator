@@ -21,7 +21,7 @@ function(input, output) {
   prod_inf <- c()
   observeEvent(input$submit_button,{
     
-    if(input$past_year > input$to_year){
+    if(input$past_year >= input$to_year){
       output$warning_years <- renderText("'From year' must be smaller than 'To year'")
     } else {
     
